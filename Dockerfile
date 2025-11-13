@@ -1,28 +1,18 @@
-# Use an official Java 21 image as base
+# Use Java 21 base image
 FROM eclipse-temurin:21-jdk
 
-# Set working directory
 WORKDIR /app
 
-# Copy the Maven wrapper and pom.xml
+# Copy Maven wrapper + project descriptor
 COPY mvnw ./
 COPY .mvn .mvn
 COPY pom.xml ./
 
-# Make sure mvnw is executable (important when pushing from Windows)
 RUN chmod +x mvnw
 
-# Download dependencies (cached layer)
-RUN ./mvnw dependency:go-offline
-
-# Copy source code
+# Build directly (no go-offline)
 COPY src src
-
-# Build the Spring Boot jar
 RUN ./mvnw clean package -DskipTests
 
-# Run the Spring Boot app
-CMD ["java", "-jar", "target/handydz.jar"]
-
-# Expose port 8080 for Render
 EXPOSE 8080
+CMD ["java", "-jar", "target/handydz-0.0.1-SNAPSHOT.jar"]
