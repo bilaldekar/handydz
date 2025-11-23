@@ -46,27 +46,102 @@ public class HandydzApplication {
 	@Bean
 	CommandLineRunner seedCategories(dz.handy.repository.ServiceCategoryRepository categoryRepository) {
 		return args -> {
-			if (!categoryRepository.existsByName("Plumbing")) {
-				dz.handy.entity.ServiceCategory c1 = dz.handy.entity.ServiceCategory.builder()
-						.name("Plumbing")
-						.description("All plumbing related services")
-						.build();
-				categoryRepository.save(c1);
+//			if (!categoryRepository.existsByName("Plumbing")) {
+//				dz.handy.entity.ServiceCategory c1 = dz.handy.entity.ServiceCategory.builder()
+//						.name("Plumbing")
+//						.description("All plumbing related services")
+//						.build();
+//				categoryRepository.save(c1);
+//			}
+//			if (!categoryRepository.existsByName("Electrical")) {
+//				dz.handy.entity.ServiceCategory c2 = dz.handy.entity.ServiceCategory.builder()
+//						.name("Electrical")
+//						.description("Electrical installation and repair")
+//						.build();
+//				categoryRepository.save(c2);
+//			}
+//			if (!categoryRepository.existsByName("Carpentry")) {
+//				dz.handy.entity.ServiceCategory c3 = dz.handy.entity.ServiceCategory.builder()
+//						.name("Carpentry")
+//						.description("Woodwork and furniture services")
+//						.build();
+//				categoryRepository.save(c3);
+//			}
+
+			// Additional categories seeding
+			String[] additionalCategories = new String[] {
+				"Plumber",
+				"Electrician",
+				"Carpenter",
+				"Blacksmith",
+				"HVAC Technician",
+				"Gas Technician",
+				"Water Heater Repair",
+				"Door and Window Repair",
+				"Construction Worker",
+				"Tile Installer",
+				"Gypsum Board Installer/Decorator",
+				"Painter",
+				"Thermal and Waterproofing Insulation",
+				"Tile and Ceramic Installation",
+				"Demolition and Renovation",
+				"House Cleaning",
+				"Post-Construction Apartment Cleaning",
+				"Carpet and Rug Cleaning",
+				"Water Tank Cleaning",
+				"Garden Cleaning",
+				"Disinfection and Pest Control",
+				"Car Mechanic",
+				"Car Electrician",
+				"Oil Change",
+				"Mobile Car Wash",
+				"Tire Repair",
+				"Mobile Technical Inspection",
+				"Goods and Furniture Transport",
+				"Truck with Driver",
+				"Furniture Lifter",
+				"Local Delivery",
+				"Computer Maintenance",
+				"WiFi Network Installation",
+				"Phone Repair",
+				"Security Camera Installation",
+				"Website Development",
+				"Printer Maintenance",
+				"Gardener",
+				"Lawn Mower",
+				"Garden Designer",
+				"Irrigation System Installation",
+				"Tree Pruning",
+				"Tailor",
+				"Photographer",
+				"Interior Designer",
+				"Custom Furniture Maker Request",
+				"Artistic Blacksmith",
+				"Engraver",
+				"Public Writer",
+				"Printing and Photocopying",
+				"Translation",
+				"Document Extraction",
+				"Caterer",
+				"Traditional Pastry Chef",
+				"Chair and Table Rental",
+				"DJ and Musician",
+				"Nanny",
+				"Home Nurse",
+				"Home Fitness Trainer",
+				"Home Hairdresser"
+			};
+
+			for (String name : additionalCategories) {
+				if (!categoryRepository.existsByName(name)) {
+					dz.handy.entity.ServiceCategory category = dz.handy.entity.ServiceCategory.builder()
+							.name(name)
+							.description(name)
+							.build();
+					categoryRepository.save(category);
+				}
 			}
-			if (!categoryRepository.existsByName("Electrical")) {
-				dz.handy.entity.ServiceCategory c2 = dz.handy.entity.ServiceCategory.builder()
-						.name("Electrical")
-						.description("Electrical installation and repair")
-						.build();
-				categoryRepository.save(c2);
-			}
-			if (!categoryRepository.existsByName("Carpentry")) {
-				dz.handy.entity.ServiceCategory c3 = dz.handy.entity.ServiceCategory.builder()
-						.name("Carpentry")
-						.description("Woodwork and furniture services")
-						.build();
-				categoryRepository.save(c3);
-			}
+
 			System.out.println("--> Seeded categories: " + categoryRepository.findAll().size());
 		};
 	}

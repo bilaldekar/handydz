@@ -52,6 +52,12 @@ public class User {
     @Column(name = "longitude")
     private Double longitude;
 
+    @Column(name = "WILAYA")
+    private String wilaya;
+
+    @Column(name = "COMMUNE")
+    private String commune;
+
 //    @Column(name = "PASSWORD_CHANGED")
 //    private Integer passwordChanged;
 

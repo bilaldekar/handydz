@@ -40,6 +40,9 @@ public class UserDTO {
 
     private Double longitude;
 
+    private String wilaya;
+
+    private String commune;
 
     @JsonIgnore
     private Date attemptDate;
