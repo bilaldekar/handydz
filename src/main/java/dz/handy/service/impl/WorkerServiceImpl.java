@@ -4,6 +4,9 @@ import dz.handy.entity.ServiceCategory;
 import dz.handy.entity.Worker;
 import dz.handy.repository.WorkerRepository;
 import dz.handy.service.WorkerService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,6 +48,13 @@ public class WorkerServiceImpl implements WorkerService {
                 .filter(worker -> worker.getLatitude() != null && worker.getLongitude() != null)
                 .filter(worker -> distanceKm(clientLat, clientLon, worker.getLatitude(), worker.getLongitude()) <= radiusKm)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Worker> findTopWorkersByRating(int limit) {
+        int effectiveLimit = Math.max(1, limit);
+        Pageable pageable = PageRequest.of(0, effectiveLimit, Sort.by(Sort.Direction.DESC, "rating"));
+        return workerRepository.findAll(pageable).getContent();
     }
 
     private double distanceKm(double lat1, double lon1, double lat2, double lon2) {

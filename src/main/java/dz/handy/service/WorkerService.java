@@ -16,4 +16,6 @@ public interface WorkerService {
 
     List<Worker> findNearbyWorkers(ServiceCategory category, double clientLat, double clientLon, double radiusKm);
 
+    List<Worker> findTopWorkersByRating(int limit);
+
 }

@@ -38,6 +38,13 @@ public class WorkerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/top")
+    public ResponseEntity<List<Worker>> getTopWorkers(
+            @RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
+        List<Worker> topWorkers = workerService.findTopWorkersByRating(limit);
+        return ResponseEntity.ok(topWorkers);
+    }
+
 //    @PostMapping
 //    public ResponseEntity<Worker> create(@RequestBody Worker worker) {
 //        try {
