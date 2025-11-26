@@ -43,7 +43,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String methodAndPath = "[" + method + "]" + path;
         log.info("Requested URL {}", methodAndPath);
         if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
-            this.writeResponse(response, HttpServletResponse.SC_OK, "Pre-flight Request accepted");
+            // Let Spring's CorsFilter handle the preflight and headers
+            chain.doFilter(request, response);
+            return;
         }
         // Get authorization header and validate
         final String header = request.getHeader(SecurityConstants.TOKEN_HEADER);
