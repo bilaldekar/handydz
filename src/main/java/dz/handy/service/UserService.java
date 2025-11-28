@@ -3,6 +3,7 @@ package dz.handy.service;
 import dz.handy.entity.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface UserService {
@@ -27,6 +28,14 @@ public interface UserService {
      * @return saved user or empty if not found
      */
     Optional<User> update(String username, User user);
+
+    /**
+     * Partially updates an existing user. Only provided fields will be updated.
+     * @param username username of the user to update
+     * @param updates map of field names to new values
+     * @return saved user or empty if not found
+     */
+    Optional<User> patch(String username, Map<String, Object> updates);
 
     /**
      * Deletes a user by username.
