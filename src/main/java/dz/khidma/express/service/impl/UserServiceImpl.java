@@ -1,6 +1,9 @@
 package dz.khidma.express.service.impl;
 
+import dz.khidma.express.entity.ServiceCategory;
 import dz.khidma.express.entity.User;
+import dz.khidma.express.entity.Worker;
+import dz.khidma.express.repository.ServiceCategoryRepository;
 import dz.khidma.express.repository.UserRepository;
 import dz.khidma.express.service.UserService;
 import org.springframework.stereotype.Service;
@@ -14,9 +17,11 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ServiceCategoryRepository serviceCategoryRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, ServiceCategoryRepository serviceCategoryRepository) {
         this.userRepository = userRepository;
+        this.serviceCategoryRepository = serviceCategoryRepository;
     }
 
     @Override
@@ -64,30 +69,102 @@ public class UserServiceImpl implements UserService {
             if (value instanceof String str && str.isBlank()) {
                 // Allow setting blank string values if explicitly provided
             }
+            boolean handled = false;
+            // Base User fields
             switch (key) {
-                case "email" -> user.setEmail((String) value);
-                case "phoneNumber1" -> user.setPhoneNumber1((String) value);
-                case "firstName" -> user.setFirstName((String) value);
-                case "lastName" -> user.setLastName((String) value);
-                case "enabled" -> user.setEnabled(castToInteger(value));
-                case "latitude" -> user.setLatitude(castToDouble(value));
-                case "longitude" -> user.setLongitude(castToDouble(value));
-                case "wilaya" -> user.setWilaya((String) value);
-                case "commune" -> user.setCommune((String) value);
-                case "accountNonLocked" -> user.setAccountNonLocked(castToInt(value));
-                case "creationDate" -> user.setCreationDate(castToDate(value));
-                case "expiryDate" -> user.setExpiryDate(castToDate(value));
-                case "lastLogin" -> user.setLastLogin(castToDate(value));
-                // Intentionally ignore fields that should not be patched via this endpoint
-                // such as username, password, roles, attempt/lock fields managed internally
-                default -> {
-                    // ignore unknown fields
+                case "email" -> { user.setEmail((String) value); handled = true; }
+                case "phoneNumber1" -> { user.setPhoneNumber1((String) value); handled = true; }
+                case "firstName" -> { user.setFirstName((String) value); handled = true; }
+                case "lastName" -> { user.setLastName((String) value); handled = true; }
+                case "enabled" -> { user.setEnabled(castToInteger(value)); handled = true; }
+                case "latitude" -> { user.setLatitude(castToDouble(value)); handled = true; }
+                case "longitude" -> { user.setLongitude(castToDouble(value)); handled = true; }
+                case "wilaya" -> { user.setWilaya((String) value); handled = true; }
+                case "commune" -> { user.setCommune((String) value); handled = true; }
+                case "accountNonLocked" -> { user.setAccountNonLocked(castToInt(value)); handled = true; }
+                case "creationDate" -> { user.setCreationDate(castToDate(value)); handled = true; }
+                case "expiryDate" -> { user.setExpiryDate(castToDate(value)); handled = true; }
+                case "lastLogin" -> { user.setLastLogin(castToDate(value)); handled = true; }
+                default -> {}
+            }
+
+            // Worker-specific fields if applicable
+            if (!handled && user instanceof Worker worker) {
+                switch (key) {
+                    case "specialization" -> worker.setSpecialization((String) value);
+                    case "rating" -> {
+                        Double d = castToDouble(value);
+                        if (d != null) worker.setRating(d);
+                    }
+                    case "available" -> worker.setAvailable(castToBoolean(value));
+                    case "categoryId" -> {
+                        Long id = castToLong(value);
+                        ServiceCategory sc = serviceCategoryRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: id=" + id));
+                        worker.setCategory(sc);
+                    }
+                    case "categoryName" -> {
+                        String name = (String) value;
+                        ServiceCategory sc = serviceCategoryRepository.findByName(name)
+                                .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: name=" + name));
+                        worker.setCategory(sc);
+                    }
+                    case "category" -> {
+                        // Allow either id (number) or name (string)
+                        ServiceCategory sc = resolveCategory(value);
+                        worker.setCategory(sc);
+                    }
+                    default -> { /* ignore unknown fields */ }
                 }
             }
         }
 
         User saved = userRepository.save(user);
         return Optional.of(saved);
+    }
+
+    private boolean castToBoolean(Object value) {
+        if (value == null) return false;
+        if (value instanceof Boolean b) return b;
+        if (value instanceof Number n) return n.intValue() != 0;
+        if (value instanceof String s) {
+            String t = s.trim().toLowerCase();
+            if (t.equals("true") || t.equals("yes") || t.equals("1")) return true;
+            if (t.equals("false") || t.equals("no") || t.equals("0")) return false;
+            throw new IllegalArgumentException("Cannot cast to boolean: " + value);
+        }
+        throw new IllegalArgumentException("Cannot cast to boolean: " + value);
+    }
+
+    private Long castToLong(Object value) {
+        if (value == null) return null;
+        if (value instanceof Long l) return l;
+        if (value instanceof Integer i) return i.longValue();
+        if (value instanceof Number n) return n.longValue();
+        if (value instanceof String s) return Long.valueOf(s);
+        throw new IllegalArgumentException("Cannot cast to Long: " + value);
+    }
+
+    private ServiceCategory resolveCategory(Object value) {
+        if (value == null) return null;
+        if (value instanceof Number n) {
+            Long id = n.longValue();
+            return serviceCategoryRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: id=" + id));
+        }
+        if (value instanceof String s) {
+            // Try numeric string as id first
+            try {
+                Long id = Long.valueOf(s);
+                return serviceCategoryRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: id=" + id));
+            } catch (NumberFormatException ignore) {
+                // then treat as name
+                return serviceCategoryRepository.findByName(s)
+                        .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: name=" + s));
+            }
+        }
+        throw new IllegalArgumentException("Unsupported category value: " + value);
     }
 
     private Integer castToInteger(Object value) {
