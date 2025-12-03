@@ -90,9 +90,12 @@ public class User {
     @JoinTable(name = "USERS_ROLES", joinColumns = @JoinColumn(name = "USERNAME"), inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
     private List<Role> roles;
 
-//    public String getFullName(){
-//        return this.getFirstName() + " " + this.getLastName();
-//    }
+    public String getFullName(){
+        String fn = this.getFirstName() != null ? this.getFirstName().trim() : "";
+        String ln = this.getLastName() != null ? this.getLastName().trim() : "";
+        if (!fn.isEmpty() && !ln.isEmpty()) return fn + " " + ln;
+        return (fn + " " + ln).trim();
+    }
 
     @Override
     public String toString() {

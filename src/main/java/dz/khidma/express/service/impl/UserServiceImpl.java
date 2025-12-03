@@ -147,24 +147,47 @@ public class UserServiceImpl implements UserService {
 
     private ServiceCategory resolveCategory(Object value) {
         if (value == null) return null;
+
+        // Accept a numeric id directly
         if (value instanceof Number n) {
             Long id = n.longValue();
             return serviceCategoryRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: id=" + id));
         }
+
+        // Accept an id/name provided as a String
         if (value instanceof String s) {
+            String trimmed = s.trim();
             // Try numeric string as id first
             try {
-                Long id = Long.valueOf(s);
+                Long id = Long.valueOf(trimmed);
                 return serviceCategoryRepository.findById(id)
                         .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: id=" + id));
             } catch (NumberFormatException ignore) {
                 // then treat as name
-                return serviceCategoryRepository.findByName(s)
-                        .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: name=" + s));
+                return serviceCategoryRepository.findByName(trimmed)
+                        .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: name=" + trimmed));
             }
         }
-        throw new IllegalArgumentException("Unsupported category value: " + value);
+
+        // Accept an object like { "id": 5 } or { "name": "Plumbing" }
+        if (value instanceof Map<?, ?> map) {
+            Object idVal = map.get("id");
+            if (idVal != null) {
+                Long id = castToLong(idVal);
+                return serviceCategoryRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: id=" + id));
+            }
+            Object nameVal = map.get("name");
+            if (nameVal != null) {
+                String name = String.valueOf(nameVal).trim();
+                return serviceCategoryRepository.findByName(name)
+                        .orElseThrow(() -> new IllegalArgumentException("ServiceCategory not found: name=" + name));
+            }
+            throw new IllegalArgumentException("Category map must contain 'id' or 'name'");
+        }
+
+        throw new IllegalArgumentException("Unsupported category value type: " + value.getClass().getName());
     }
 
     private Integer castToInteger(Object value) {
