@@ -92,13 +92,13 @@ public class AuthenticationService {
     }
 
     public ExtendedGenericResponse<User> register(UserDTO request) {
-        if (request == null || request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-            return new ExtendedGenericResponse<>(400, "Username is null or empty", null);
-        }
-        String username = request.getUsername().trim();
-        if (userRepository.findByUsername(username).isPresent()) {
-            return new ExtendedGenericResponse<>(400, "Username already exists", null);
-        }
+//        if (request == null || request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+//            return new ExtendedGenericResponse<>(400, "Username is null or empty", null);
+//        }
+//        String username = request.getUsername().trim();
+//        if (userRepository.findByUsername(username).isPresent()) {
+//            return new ExtendedGenericResponse<>(400, "Username already exists", null);
+//        }
 
         // Validate email: required and unique (case-insensitive)
         String email = request.getEmail() != null ? request.getEmail().trim() : null;
@@ -135,7 +135,7 @@ public class AuthenticationService {
         }
 
         // Populate common fields
-        user.setUsername(username);
+//        user.setUsername(username);
         user.setEmail(request.getEmail());
         user.setPhoneNumber1(request.getPhoneNumber1());
         user.setFirstName(request.getFirstName());
