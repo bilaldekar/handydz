@@ -36,10 +36,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/verification/email")
-    public ExtendedGenericResponse<String> sendVerificationEmail(@RequestBody VerificationEmailRequest request) {
-        String username = request.getUsername();
-        String email = request.getEmail();
-        return verificationService.sendVerificationCode(username, email);
+    public ExtendedGenericResponse<String> sendVerificationEmail(@RequestParam  String email) {
+//        String username = request.getUsername();
+//        String email = request.getEmail();
+        return verificationService.sendVerificationCode( email);
     }
 
     @PostMapping("/verification/email/confirm")

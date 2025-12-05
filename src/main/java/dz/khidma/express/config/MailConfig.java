@@ -21,11 +21,11 @@ import jakarta.mail.internet.MimeMessage;
 @Configuration
 public class MailConfig {
 
-    @Bean
-    @ConditionalOnMissingBean(JavaMailSender.class)
-    public JavaMailSender noOpMailSender() {
-        return new NoOpMailSender();
-    }
+//    @Bean
+//    @ConditionalOnMissingBean(JavaMailSender.class)
+//    public JavaMailSender noOpMailSender() {
+//        return new NoOpMailSender();
+//    }
 
     static class NoOpMailSender implements JavaMailSender {
         private static final Logger log = LoggerFactory.getLogger(NoOpMailSender.class);

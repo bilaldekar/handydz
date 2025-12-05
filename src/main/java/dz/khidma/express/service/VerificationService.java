@@ -4,8 +4,13 @@ import dz.khidma.express.entity.User;
 import dz.khidma.express.model.security.ExtendedGenericResponse;
 import dz.khidma.express.model.security.GenericResponse;
 import dz.khidma.express.repository.UserRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -28,13 +33,13 @@ public class VerificationService {
 
     private final Map<String, CodeInfo> codes = new ConcurrentHashMap<>();
 
-    public ExtendedGenericResponse<String> sendVerificationCode(String username, String email) {
+    public ExtendedGenericResponse<String> sendVerificationCode(String email) {
         Optional<User> userOpt = Optional.empty();
         String targetEmail = email;
 
-        if (username != null && !username.isBlank()) {
-            userOpt = userRepository.findByUsername(username.trim());
-        }
+//        if (username != null && !username.isBlank()) {
+//            userOpt = userRepository.findByUsername(username.trim());
+//        }
         if (userOpt.isEmpty() && email != null && !email.isBlank()) {
             userOpt = userRepository.findByEmail(email.trim());
         }
@@ -48,7 +53,7 @@ public class VerificationService {
 
         if (targetEmail == null || targetEmail.isBlank()) {
             // For privacy, do not reveal whether user exists; respond success-like message
-            log.warn("Verification email requested without resolvable target email (username={}, email provided={})", username, email);
+            log.warn("Verification email requested without resolvable target email (username={}, email provided={})", email);
             return new ExtendedGenericResponse<>(200, GenericResponse.SUCCESS, "If an account exists, a code will be sent.");
         }
 
@@ -56,15 +61,32 @@ public class VerificationService {
         codes.put(targetEmail.toLowerCase(), new CodeInfo(code, Instant.now().plusSeconds(DEFAULT_TTL_SECONDS)));
 
         try {
-            emailService.sendSimpleMessage(targetEmail,
-                    "Your verification code",
-                    "Your verification code is: " + code + "\nIt expires in 10 minutes.");
+//            emailService.sendSimpleMessage(targetEmail,
+//                    "Your verification code",
+//                    "Your verification code is: " + code + "\nIt expires in 10 minutes.");
+            this.sendHtmlEmail(targetEmail, "KhidmaExpress verification code","Your KhidmaExpress verification code is: " + code + "\nIt expires in 10 minutes.");
         } catch (Exception ex) {
             log.error("Failed to send verification email to {}: {}", targetEmail, ex.getMessage());
             return new ExtendedGenericResponse<>(500, "Failed to send verification email", null);
         }
 
         return new ExtendedGenericResponse<>(200, GenericResponse.SUCCESS, "Verification code sent");
+    }
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    public void sendHtmlEmail(String to, String subject, String html) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setTo(to);
+        helper.setSubject(subject);
+//        helper.setText(html, true);
+        message.setText(html);
+//        helper.setFrom("bilaldekar@gmail.com");
+
+        mailSender.send(message);
     }
 
     public boolean verifyCode(String email, String code) {
