@@ -135,7 +135,7 @@ public class AuthenticationService {
         }
 
         // Populate common fields
-//        user.setUsername(username);
+        user.setUsername(request.getEmail());
         user.setEmail(request.getEmail());
         user.setPhoneNumber1(request.getPhoneNumber1());
         user.setFirstName(request.getFirstName());
