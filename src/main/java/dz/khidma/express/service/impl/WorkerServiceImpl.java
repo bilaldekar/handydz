@@ -45,6 +45,7 @@ public class WorkerServiceImpl implements WorkerService {
                 ? workerRepository.findAll()
                 : workerRepository.findByCategory(category);
         return allWorkers.stream()
+                .filter(Worker::isAvailable)
                 .filter(worker -> worker.getLatitude() != null && worker.getLongitude() != null)
                 .filter(worker -> distanceKm(clientLat, clientLon, worker.getLatitude(), worker.getLongitude()) <= radiusKm)
                 .collect(Collectors.toList());
